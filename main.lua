@@ -1,395 +1,442 @@
--- DaniloKolyadenko ULTIMATE Brainrot Hack
+-- DaniloKolyadenko WEB Key System v9.0
+-- Website Key Verification
 -- by @Dexter1938
 
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+if _G.DaniloWebLoaded then return end
+_G.DaniloWebLoaded = true
 
-local Window = Rayfield:CreateWindow({
-    Name = "DaniloKolyadenko",
-    LoadingTitle = "ULTIMATE BRAINROT HACK",
-    LoadingSubtitle = "by @Dexter1938",
-    ConfigurationSaving = {
-        Enabled = true,
-        FolderName = "DaniloKolyadenkoConfig",
-        FileName = "UltimateConfig"
-    },
-    KeySystem = false,
-    KeySettings = {
-        Title = "DaniloKolyadenko VIP",
-        Subtitle = "Access System",
-        Note = "No key required",
-        FileName = "DaniloKey",
-        SaveKey = true,
-        GrabKeyFromSite = false,
-        Key = {"DEXTER1938"}
-    }
+-- ВАШ ПОСТОЯННЫЙ КЛЮЧ (не удалять!)
+local PermanentKey = "AHEFH_PERMANENT_2024"
+
+-- СПИСОК ВАЛИДНЫХ КЛЮЧЕЙ С СЕРВЕРА
+local ServerKeys = {
+    "AHEFH_PERMANENT_2024",  -- Твой вечный ключ
+    -- Остальные будут грузиться с сайта
+}
+
+-- ПЕРЕМЕННЫЕ
+local KeyVerified = false
+local Attempts = 0
+
+-- ЗАГРУЗКА КЛЮЧЕЙ С САЙТА
+local function LoadKeysFromWebsite()
+    local success, keys = pcall(function()
+        -- Это примерный URL, тебе нужно создать реальный сайт
+        local response = game:HttpGet("https://yourwebsite.com/getkeys.php")
+        return game:GetService("HttpService"):JSONDecode(response)
+    end)
+    
+    if success and keys then
+        for _, key in pairs(keys) do
+            table.insert(ServerKeys, key)
+        end
+        print("✅ Keys loaded from website")
+    else
+        print("⚠️ Using default keys")
+    end
+end
+
+-- ОСНОВНОЙ ИНТЕРФЕЙС
+local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/shlexware/Orion/main/source'))()
+
+local Window = OrionLib:MakeWindow({
+    Name = "🔐 DaniloKolyadenko Key System",
+    HidePremium = false,
+    SaveConfig = false,
+    IntroEnabled = true,
+    IntroText = "Key Verification Required",
+    IntroIcon = "rbxassetid://4483345998"
 })
 
--- ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
-local Services = {
-    Players = game:GetService("Players"),
-    Workspace = game:GetService("Workspace"),
-    TeleportService = game:GetService("TeleportService"),
-    HttpService = game:GetService("HttpService"),
-    RunService = game:GetService("RunService")
-}
+-- KEY VERIFICATION TAB
+local KeyTab = Window:MakeTab({
+    Name = "🔑 Key Verification",
+    Icon = "rbxassetid://4483345998"
+})
 
-local Player = Services.Players.LocalPlayer
-local Mouse = Player:GetMouse()
+KeyTab:AddLabel("🔒 Premium Access Required")
+KeyTab:AddLabel("This script requires a valid key")
+KeyTab:AddParagraph("How to get key:", "1. Visit our website\n2. Complete simple tasks\n3. Get your free key\n4. Enter it below")
 
--- СОСТОЯНИЯ АКТИВНЫХ ФУНКЦИЙ
-local Active = {
-    AutoPunch = false,
-    AutoKick = false,
-    AutoCollect = false,
-    ServerHop = false,
-    ESP = false,
-    NoClip = false,
-    Speed = false,
-    Jump = false,
-    AntiGrab = false
-}
-
--- КОНФИГУРАЦИЯ
-local Config = {
-    PunchRange = 25,
-    KickRange = 20,
-    CollectRange = 50,
-    PunchDelay = 0.1,
-    KickDelay = 0.3,
-    CollectDelay = 0.5,
-    WalkSpeed = 50,
-    JumpPower = 100
-}
-
--- ТАБЫ (как на скриншоте)
-local CombatTab = Window:CreateTab("Combat", "swords") -- Иконка мечей
-local TrollTab = Window:CreateTab("Troll", "laugh") -- Иконка смеха
-local ScreenTab = Window:CreateTab("Screen", "monitor") -- Иконка монитора
-local MiscTab = Window:CreateTab("Misc", "settings") -- Иконка настроек
-local SettingsTab = Window:CreateTab("Settings", "cog") -- Иконка шестеренки
-
--- ФУНКЦИЯ ДЛЯ ESP (Визуализация брейнротов и игроков)
-local function CreateESP()
-    if Active.ESP then
-        for _, brainrot in pairs(Services.Workspace:GetChildren()) do
-            if brainrot.Name:find("Brainrot") then
-                local highlight = Instance.new("Highlight")
-                highlight.Name = "BrainrotESP"
-                highlight.Adornee = brainrot
-                highlight.FillColor = Color3.fromRGB(0, 255, 0)
-                highlight.OutlineColor = Color3.fromRGB(0, 200, 0)
-                highlight.FillTransparency = 0.5
-                highlight.Parent = brainrot
-            end
-        end
+-- КНОПКА ПЕРЕХОДА НА САЙТ
+KeyTab:AddButton({
+    Name = "🌐 Get Key from Website",
+    Callback = function()
+        -- Твой сайт где будут задания
+        local website = "https://yourwebsite.com/getkey"
+        OrionLib:MakeNotification({
+            Name = "🌐 Open Website",
+            Content = "Opening: " .. website,
+            Image = "rbxassetid://4483345998",
+            Time = 5
+        })
         
-        for _, player in pairs(Services.Players:GetPlayers()) do
-            if player ~= Player and player.Character then
-                local highlight = Instance.new("Highlight")
-                highlight.Name = "PlayerESP"
-                highlight.Adornee = player.Character
-                highlight.FillColor = Color3.fromRGB(255, 0, 0)
-                highlight.OutlineColor = Color3.fromRGB(200, 0, 0)
-                highlight.FillTransparency = 0.3
-                highlight.Parent = player.Character
-            end
-        end
-    end
-end
-
--- ФУНКЦИЯ АВТО-УДАРА
-local function AutoPunch()
-    while Active.AutoPunch do
-        task.wait(Config.PunchDelay)
-        
-        for _, target in pairs(Services.Players:GetPlayers()) do
-            if target ~= Player and target.Character then
-                local humanoid = target.Character:FindFirstChild("Humanoid")
-                local root = target.Character:FindFirstChild("HumanoidRootPart")
-                
-                if humanoid and humanoid.Health > 0 and root then
-                    local distance = (Player.Character.HumanoidRootPart.Position - root.Position).Magnitude
-                    
-                    if distance <= Config.PunchRange then
-                        -- Симуляция удара
-                        Player.Character.HumanoidRootPart.CFrame = root.CFrame * CFrame.new(0, 0, -2)
-                        task.wait(0.1)
-                        -- Можно добавить реальный удар через RemoteEvent если известен
-                    end
-                end
-            end
-        end
-    end
-end
-
--- ФУНКЦИЯ АВТО-КИКА
-local function AutoKick()
-    while Active.AutoKick do
-        task.wait(Config.KickDelay)
-        
-        for _, target in pairs(Services.Players:GetPlayers()) do
-            if target ~= Player and target.Character then
-                local humanoid = target.Character:FindFirstChild("Humanoid")
-                local root = target.Character:FindFirstChild("HumanoidRootPart")
-                
-                if humanoid and humanoid.Health > 0 and root then
-                    local distance = (Player.Character.HumanoidRootPart.Position - root.Position).Magnitude
-                    
-                    if distance <= Config.KickRange then
-                        -- Симуляция кика (толчок)
-                        local bodyVelocity = Instance.new("BodyVelocity")
-                        bodyVelocity.Velocity = Vector3.new(0, 50, 0)
-                        bodyVelocity.MaxForce = Vector3.new(10000, 10000, 10000)
-                        bodyVelocity.Parent = root
-                        task.wait(0.2)
-                        bodyVelocity:Destroy()
-                    end
-                end
-            end
-        end
-    end
-end
-
--- ФУНКЦИЯ АВТО-СБОРА БРЕЙНРОТОВ
-local function AutoCollectBrainrots()
-    while Active.AutoCollect do
-        task.wait(Config.CollectDelay)
-        
-        for _, item in pairs(Services.Workspace:GetChildren()) do
-            if item.Name:find("Brainrot") and item:IsA("BasePart") then
-                local distance = (Player.Character.HumanoidRootPart.Position - item.Position).Magnitude
-                
-                if distance <= Config.CollectRange then
-                    Player.Character.HumanoidRootPart.CFrame = item.CFrame
-                    task.wait(0.1)
-                    -- Предполагаем, что сбор происходит при касании
-                end
-            end
-        end
-    end
-end
-
--- ФУНКЦИЯ ПОИСКА СЕРВЕРОВ С БРЕЙНРОТАМИ
-local function FindBrainrotServers()
-    Rayfield:Notify({
-        Title = "Server Search",
-        Content = "Searching for servers with brainrots...",
-        Duration = 3,
-    })
-    
-    -- Это примерная логика, в реальности нужен доступ к API или список серверов
-    local serverIds = {123456789, 987654321, 555555555} -- Пример ID серверов
-    
-    for _, serverId in pairs(serverIds) do
-        local success, error = pcall(function()
-            Services.TeleportService:TeleportToPlaceInstance(game.PlaceId, tostring(serverId), Player)
+        -- Попытка открыть браузер (для ПК)
+        pcall(function()
+            setclipboard(website)
+            OrionLib:MakeNotification({
+                Name = "📋 Link Copied",
+                Content = "Website link copied to clipboard!",
+                Image = "rbxassetid://4483345998",
+                Time = 3
+            })
         end)
         
-        if success then
-            Rayfield:Notify({
-                Title = "Success",
-                Content = "Teleporting to server " .. serverId,
-                Duration = 3,
-            })
-            break
-        end
+        -- Загрузка ключей с сайта
+        LoadKeysFromWebsite()
     end
-end
-
--- COMBAT TAB
-local CombatSection = CombatTab:CreateSection("Auto Actions")
-
-local AutoPunchToggle = CombatSection:CreateToggle({
-    Name = "Auto Punch Players",
-    CurrentValue = false,
-    Flag = "AutoPunchToggle",
-    Callback = function(Value)
-        Active.AutoPunch = Value
-        if Value then
-            coroutine.wrap(AutoPunch)()
-            Rayfield:Notify({
-                Title = "Auto Punch",
-                Content = "Started auto punching!",
-                Duration = 2,
-            })
-        end
-    end,
 })
 
-local AutoKickToggle = CombatSection:CreateToggle({
-    Name = "Auto Kick Players",
-    CurrentValue = false,
-    Flag = "AutoKickToggle",
+-- ПОЛЕ ДЛЯ ВВОДА КЛЮЧА
+local KeyInput = ""
+KeyTab:AddTextbox({
+    Name = "Enter Your Key",
+    Default = "",
+    TextDisappear = true,
     Callback = function(Value)
-        Active.AutoKick = Value
-        if Value then
-            coroutine.wrap(AutoKick)()
-            Rayfield:Notify({
-                Title = "Auto Kick",
-                Content = "Started auto kicking!",
-                Duration = 2,
-            })
-        end
-    end,
+        KeyInput = string.upper(Value)
+    end
 })
 
-local AutoCollectToggle = CombatSection:CreateToggle({
-    Name = "Auto Collect Brainrots",
-    CurrentValue = false,
-    Flag = "AutoCollectToggle",
-    Callback = function(Value)
-        Active.AutoCollect = Value
-        if Value then
-            coroutine.wrap(AutoCollectBrainrots)()
-            Rayfield:Notify({
-                Title = "Auto Collect",
-                Content = "Started collecting brainrots!",
-                Duration = 2,
-            })
-        end
-    end,
-})
-
-local ServerHopButton = CombatSection:CreateButton({
-    Name = "Find Brainrot Servers",
+-- КНОПКА ПРОВЕРКИ
+KeyTab:AddButton({
+    Name = "✅ Verify Key",
     Callback = function()
-        FindBrainrotServers()
-    end,
-})
-
--- TROLL TAB
-local TrollSection = TrollTab:CreateSection("Trolling")
-
-local NoClipToggle = TrollSection:CreateToggle({
-    Name = "NoClip Mode",
-    CurrentValue = false,
-    Flag = "NoClipToggle",
-    Callback = function(Value)
-        Active.NoClip = Value
-        if Value then
-            for _, part in pairs(Player.Character:GetChildren()) do
-                if part:IsA("BasePart") then
-                    part.CanCollide = false
-                end
-            end
-        else
-            for _, part in pairs(Player.Character:GetChildren()) do
-                if part:IsA("BasePart") then
-                    part.CanCollide = true
-                end
+        if KeyInput == "" then
+            OrionLib:MakeNotification({
+                Name = "❌ Empty Key",
+                Content = "Please enter a key first!",
+                Image = "rbxassetid://4483345998",
+                Time = 3
+            })
+            return
+        end
+        
+        Attempts = Attempts + 1
+        
+        -- ПРОВЕРКА НА ТВОЙ ПОСТОЯННЫЙ КЛЮЧ
+        if KeyInput == PermanentKey then
+            KeyVerified = true
+            OrionLib:MakeNotification({
+                Name = "🎉 PERMANENT ACCESS!",
+                Content = "Welcome back, AHEFH!",
+                Image = "rbxassetid://4483345998",
+                Time = 5
+            })
+            LoadPremiumFeatures()
+            return
+        end
+        
+        -- ПРОВЕРКА ОСТАЛЬНЫХ КЛЮЧЕЙ
+        local valid = false
+        for _, validKey in pairs(ServerKeys) do
+            if KeyInput == validKey then
+                valid = true
+                break
             end
         end
-    end,
-})
-
--- SCREEN TAB
-local VisualSection = ScreenTab:CreateSection("Visuals")
-
-local ESPToggle = VisualSection:CreateToggle({
-    Name = "ESP (Brainrots & Players)",
-    CurrentValue = false,
-    Flag = "ESPToggle",
-    Callback = function(Value)
-        Active.ESP = Value
-        if Value then
-            CreateESP()
+        
+        if valid then
+            KeyVerified = true
+            OrionLib:MakeNotification({
+                Name = "✅ Key Accepted!",
+                Content = "Loading premium features...",
+                Image = "rbxassetid://4483345998",
+                Time = 3
+            })
+            LoadPremiumFeatures()
         else
-            for _, obj in pairs(Services.Workspace:GetDescendants()) do
-                if obj.Name == "BrainrotESP" or obj.Name == "PlayerESP" then
-                    obj:Destroy()
-                end
-            end
-        end
-    end,
-})
-
--- MISC TAB
-local MovementSection = MiscTab:CreateSection("Movement")
-
-local SpeedSlider = MovementSection:CreateSlider({
-    Name = "Walk Speed",
-    Range = {16, 200},
-    Increment = 5,
-    Suffix = "studs",
-    CurrentValue = 16,
-    Flag = "SpeedSlider",
-    Callback = function(Value)
-        Config.WalkSpeed = Value
-        Player.Character.Humanoid.WalkSpeed = Value
-    end,
-})
-
-local JumpSlider = MovementSection:CreateSlider({
-    Name = "Jump Power",
-    Range = {50, 300},
-    Increment = 10,
-    Suffix = "power",
-    CurrentValue = 50,
-    Flag = "JumpSlider",
-    Callback = function(Value)
-        Config.JumpPower = Value
-        Player.Character.Humanoid.JumpPower = Value
-    end,
-})
-
--- SETTINGS TAB
-local ConfigSection = SettingsTab:CreateSection("Configuration")
-
-local RangeSlider = ConfigSection:CreateSlider({
-    Name = "Punch/Kick Range",
-    Range = {10, 100},
-    Increment = 5,
-    Suffix = "studs",
-    CurrentValue = 25,
-    Flag = "RangeSlider",
-    Callback = function(Value)
-        Config.PunchRange = Value
-        Config.KickRange = Value - 5
-    end,
-})
-
-local DelaySlider = ConfigSection:CreateSlider({
-    Name = "Action Delay",
-    Range = {0.1, 2},
-    Increment = 0.1,
-    Suffix = "seconds",
-    CurrentValue = 0.3,
-    Flag = "DelaySlider",
-    Callback = function(Value)
-        Config.PunchDelay = Value
-        Config.KickDelay = Value + 0.2
-        Config.CollectDelay = Value + 0.4
-    end,
-})
-
--- ЗАКРЫТИЕ ОКНА
-Window:Prompt({
-    Title = "DaniloKolyadenko Loaded",
-    SubTitle = "by @Dexter1938",
-    Content = "Ultimate Brainrot Hack activated!",
-    Actions = {
-        Accept = {
-            Name = "Let's Go!",
-            Callback = function()
-                Rayfield:Notify({
-                    Title = "Ready",
-                    Content = "All features loaded successfully!",
-                    Duration = 3,
+            OrionLib:MakeNotification({
+                Name = "❌ Invalid Key",
+                Content = "Attempts left: " .. (3 - Attempts),
+                Image = "rbxassetid://4483345998",
+                Time = 3
+            })
+            
+            if Attempts >= 3 then
+                OrionLib:MakeNotification({
+                    Name = "🚫 Too Many Attempts",
+                    Content = "Please get a valid key from website",
+                    Image = "rbxassetid://4483345998",
+                    Time = 5
                 })
             end
-        },
-    }
+        end
+    end
 })
 
--- АВТО-ОБНОВЛЕНИЕ ESP
-Services.RunService.Heartbeat:Connect(function()
-    if Active.ESP then
-        pcall(CreateESP)
-    end
+-- ФУНКЦИЯ ЗАГРУЗКИ ПРЕМИУМ ФИЧЕЙ
+function LoadPremiumFeatures()
+    -- Закрываем окно ключей
+    Window:Destroy()
+    
+    -- ЗАГРУЗКА ОСНОВНОГО ЧИТА
+    OrionLib:MakeNotification({
+        Name = "🎮 Loading Premium Features",
+        Content = "Welcome to DaniloKolyadenko ULTRA!",
+        Image = "rbxassetid://4483345998",
+        Time = 3
+    })
+    
+    -- СОЗДАЕМ НОВОЕ ОКНО С ФИЧАМИ
+    local MainWindow = OrionLib:MakeWindow({
+        Name = "🧠 DaniloKolyadenko ULTRA",
+        HidePremium = false,
+        SaveConfig = true,
+        ConfigFolder = "DaniloConfig",
+        IntroEnabled = true,
+        IntroText = "Premium Features Unlocked!",
+        IntroIcon = "rbxassetid://4483345998"
+    })
+    
+    -- COMBAT TAB
+    local CombatTab = MainWindow:MakeTab({
+        Name = "⚔️ Combat",
+        Icon = "rbxassetid://4483345998"
+    })
+    
+    CombatTab:AddLabel("👊 Auto Actions")
+    
+    CombatTab:AddToggle({
+        Name = "Auto Punch Players",
+        Default = false,
+        Callback = function(Value)
+            _G.AutoPunch = Value
+            if Value then
+                spawn(function()
+                    while _G.AutoPunch do
+                        task.wait(0.2)
+                        pcall(function()
+                            for _, target in pairs(game.Players:GetPlayers()) do
+                                if target ~= game.Players.LocalPlayer and target.Character then
+                                    local distance = (game.Players.LocalPlayer.Character.HumanoidRootPart.Position - target.Character.HumanoidRootPart.Position).Magnitude
+                                    if distance < 25 then
+                                        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = target.Character.HumanoidRootPart.CFrame * CFrame.new(0, 0, -2)
+                                    end
+                                end
+                            end
+                        end)
+                    end
+                end)
+            end
+        end
+    })
+    
+    CombatTab:AddToggle({
+        Name = "Auto Kick Players",
+        Default = false,
+        Callback = function(Value)
+            _G.AutoKick = Value
+            if Value then
+                spawn(function()
+                    while _G.AutoKick do
+                        task.wait(0.3)
+                        pcall(function()
+                            for _, target in pairs(game.Players:GetPlayers()) do
+                                if target ~= game.Players.LocalPlayer and target.Character then
+                                    local distance = (game.Players.LocalPlayer.Character.HumanoidRootPart.Position - target.Character.HumanoidRootPart.Position).Magnitude
+                                    if distance < 20 then
+                                        local bv = Instance.new("BodyVelocity")
+                                        bv.Velocity = Vector3.new(0, 60, 0)
+                                        bv.MaxForce = Vector3.new(10000, 10000, 10000)
+                                        bv.Parent = target.Character.HumanoidRootPart
+                                        task.wait(0.15)
+                                        bv:Destroy()
+                                    end
+                                end
+                            end
+                        end)
+                    end
+                end)
+            end
+        end
+    })
+    
+    CombatTab:AddToggle({
+        Name = "Auto Collect Brainrots",
+        Default = false,
+        Callback = function(Value)
+            _G.AutoCollect = Value
+            if Value then
+                spawn(function()
+                    while _G.AutoCollect do
+                        task.wait(0.5)
+                        pcall(function()
+                            for _, obj in pairs(game.Workspace:GetChildren()) do
+                                if obj.Name:find("Brainrot") and obj:IsA("BasePart") then
+                                    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = obj.CFrame
+                                end
+                            end
+                        end)
+                    end
+                end)
+            end
+        end
+    })
+    
+    -- VISUALS TAB
+    local VisualsTab = MainWindow:MakeTab({
+        Name = "👁️ Visuals",
+        Icon = "rbxassetid://4483345998"
+    })
+    
+    VisualsTab:AddToggle({
+        Name = "Player ESP",
+        Default = false,
+        Callback = function(Value)
+            _G.PlayerESP = Value
+            if Value then
+                spawn(function()
+                    while _G.PlayerESP do
+                        task.wait(1)
+                        pcall(function()
+                            for _, player in pairs(game.Players:GetPlayers()) do
+                                if player ~= game.Players.LocalPlayer and player.Character then
+                                    local highlight = player.Character:FindFirstChild("DaniloESP") or Instance.new("Highlight")
+                                    highlight.Name = "DaniloESP"
+                                    highlight.Adornee = player.Character
+                                    highlight.FillColor = Color3.fromRGB(255, 50, 50)
+                                    highlight.OutlineColor = Color3.fromRGB(200, 0, 0)
+                                    highlight.FillTransparency = 0.3
+                                    highlight.Parent = player.Character
+                                end
+                            end
+                        end)
+                    end
+                end)
+            else
+                pcall(function()
+                    for _, obj in pairs(game.Workspace:GetDescendants()) do
+                        if obj.Name == "DaniloESP" then
+                            obj:Destroy()
+                        end
+                    end
+                end)
+            end
+        end
+    })
+    
+    -- MOVEMENT TAB
+    local MovementTab = MainWindow:MakeTab({
+        Name = "🚀 Movement",
+        Icon = "rbxassetid://4483345998"
+    })
+    
+    MovementTab:AddSlider({
+        Name = "WalkSpeed",
+        Min = 16,
+        Max = 200,
+        Default = 16,
+        Color = Color3.fromRGB(255, 255, 255),
+        Increment = 5,
+        ValueName = "speed",
+        Callback = function(Value)
+            pcall(function()
+                game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Value
+            end)
+        end
+    })
+    
+    MovementTab:AddSlider({
+        Name = "JumpPower",
+        Min = 50,
+        Max = 300,
+        Default = 50,
+        Color = Color3.fromRGB(255, 255, 255),
+        Increment = 10,
+        ValueName = "power",
+        Callback = function(Value)
+            pcall(function()
+                game.Players.LocalPlayer.Character.Humanoid.JumpPower = Value
+            end)
+        end
+    })
+    
+    -- SERVER TAB
+    local ServerTab = MainWindow:MakeTab({
+        Name = "🌐 Servers",
+        Icon = "rbxassetid://4483345998"
+    })
+    
+    ServerTab:AddButton({
+        Name = "Find Brainrot Servers",
+        Callback = function()
+            OrionLib:MakeNotification({
+                Name = "🔍 Searching Servers",
+                Content = "Looking for brainrot servers...",
+                Image = "rbxassetid://4483345998",
+                Time = 3
+            })
+            
+            -- Имитация поиска
+            local servers = {
+                "Brainrot Heaven #1",
+                "Fast Farm Server",
+                "EZ Brainrots Lobby",
+                "Premium Farm Server"
+            }
+            
+            for i, server in ipairs(servers) do
+                task.wait(1)
+                ServerTab:AddLabel("✅ " .. server)
+            end
+        end
+    })
+    
+    -- SETTINGS TAB
+    local SettingsTab = MainWindow:MakeTab({
+        Name = "⚙️ Settings",
+        Icon = "rbxassetid://4483345998"
+    })
+    
+    SettingsTab:AddLabel("👑 Premium User: AHEFH")
+    SettingsTab:AddLabel("🔑 Key: " .. KeyInput)
+    SettingsTab:AddLabel("⭐ Permanent Access")
+    
+    SettingsTab:AddButton({
+        Name = "Copy Key",
+        Callback = function()
+            setclipboard(KeyInput)
+            OrionLib:MakeNotification({
+                Name = "📋 Copied",
+                Content = "Key copied to clipboard!",
+                Image = "rbxassetid://4483345998",
+                Time = 2
+            })
+        end
+    })
+    
+    SettingsTab:AddKeybind({
+        Name = "Toggle UI",
+        Default = Enum.KeyCode.RightControl,
+        Hold = false,
+        Callback = function()
+            OrionLib:ToggleUI()
+        end
+    })
+    
+    OrionLib:MakeNotification({
+        Name = "🎉 WELCOME AHEFH!",
+        Content = "All premium features unlocked!",
+        Image = "rbxassetid://4483345998",
+        Time = 5
+    })
+end
+
+-- ЗАГРУЗКА КЛЮЧЕЙ ПРИ СТАРТЕ
+LoadKeysFromWebsite()
+
+-- АВТО-ПРОВЕРКА ТВОЕГО КЛЮЧА (для теста)
+spawn(function()
+    task.wait(2)
+    -- Если хочешь авто-вход своим ключом, раскомментируй:
+    -- KeyInput = PermanentKey
+    -- LoadPremiumFeatures()
 end)
 
-Rayfield:Notify({
-    Title = "DaniloKolyadenko",
-    Content = "ULTIMATE BRAINROT HACK LOADED!",
-    Duration = 5,
+OrionLib:InitNotification({
+    Name = "🔐 DaniloKolyadenko",
+    Content = "Key system loaded. Enter your key!",
+    Image = "rbxassetid://4483345998",
+    Time = 5
 })
